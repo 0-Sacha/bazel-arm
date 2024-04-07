@@ -1,0 +1,7 @@
+
+""
+module(
+    name = "bazel_arm_none_eabi",
+    version = "0.0.1",
+    repo_name = "sacha_bazel_arm_none_eabi",
+)
