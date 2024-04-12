@@ -63,13 +63,13 @@ def arm_none_eabi_binary(name, arm_file_elf = None, arm_file_bin = None, arm_fil
         arm_file_elf: The output elf file name
         arm_file_bin: The output bin file name
         arm_file_hex: The output hex file name
-        **kwargs: All others cc_binary attributes 
+        **kwargs: All others cc_binary attributes
     """
     binary_rule_name = "{}_raw_binary".format(name)
     cc_binary(name = binary_rule_name, **kwargs)
     arm_none_eabi_all_files(
         name = name,
-        toolchain_bins = "@{rctx_name}//:objcopy",
+        objcopy = "@%{rctx_name}//:objcopy",
         binary = ":{}".format(binary_rule_name),
         elf = "{}.elf".format(name) if arm_file_elf == None else arm_file_elf,
         bin = "{}.bin".format(name) if arm_file_bin == None else arm_file_bin,
