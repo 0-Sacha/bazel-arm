@@ -24,10 +24,10 @@ cc_toolchain_config(
     ),
     cxx_builtin_include_directories = [
         "%{toolchain_path_prefix}arm-none-eabi/include",
-        "%{toolchain_path_prefix}lib/gcc/arm-none-eabi/{compiler_version}/include",
-        "%{toolchain_path_prefix}lib/gcc/arm-none-eabi/{compiler_version}/include-fixed",
-        "%{toolchain_path_prefix}arm-none-eabi/include/c++/{compiler_version}/",
-        "%{toolchain_path_prefix}arm-none-eabi/include/c++/{compiler_version}/arm-none-eabi",
+        "%{toolchain_path_prefix}lib/gcc/arm-none-eabi/%{compiler_version}/include",
+        "%{toolchain_path_prefix}lib/gcc/arm-none-eabi/%{compiler_version}/include-fixed",
+        "%{toolchain_path_prefix}arm-none-eabi/include/c++/%{compiler_version}/",
+        "%{toolchain_path_prefix}arm-none-eabi/include/c++/%{compiler_version}/arm-none-eabi",
     ],
 
     copts = %{copts},
@@ -38,14 +38,14 @@ cc_toolchain_config(
     includedirs = %{includedirs},
     linkdirs = [
         "%{toolchain_path_prefix}arm-none-eabi/lib",
-        "%{toolchain_path_prefix}lib/gcc/arm-none-eabi/{compiler_version}",
+        "%{toolchain_path_prefix}lib/gcc/arm-none-eabi/%{compiler_version}",
     ] + %{linkdirs},
 )
 
 cc_toolchain(
     name = "cc_toolchain_%{toolchain_id}",
     toolchain_identifier = "%{toolchain_id}",
-    toolchain_config = "cc_toolchain_config_%{toolchain_id}",
+    toolchain_config = ":cc_toolchain_config_%{toolchain_id}",
     
     all_files = "//:compiler_artfacts",
     compiler_files = "//:compiler_files",
@@ -61,7 +61,7 @@ cc_toolchain(
 
 toolchain(
     name = "toolchain_%{toolchain_id}",
-    toolchain = "cc_toolchain_%{toolchain_id}",
+    toolchain = ":cc_toolchain_%{toolchain_id}",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 
     target_compatible_with = %{target_compatible_with},
@@ -138,8 +138,8 @@ filegroup(
     name = "compiler_artfacts",
     srcs = glob([
         "arm-none-eabi/**",
-        "lib/gcc/arm-none-eabi/{compiler_version}/**",
-        'arm-none-eabi/include/c++/{compiler_version}/**',
+        "lib/gcc/arm-none-eabi/%{compiler_version}/**",
+        'arm-none-eabi/include/c++/%{compiler_version}/**',
     ]),
 )
 
