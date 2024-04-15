@@ -47,7 +47,7 @@ cc_toolchain(
     toolchain_identifier = "%{toolchain_id}",
     toolchain_config = ":cc_toolchain_config_%{toolchain_id}",
     
-    all_files = "//:compiler_artfacts",
+    all_files = "//:compiler_pieces",
     compiler_files = "//:compiler_files",
     linker_files = "//:linker_files",
     ar_files = "//:ar",
@@ -135,18 +135,44 @@ filegroup(
 
 
 filegroup(
-    name = "compiler_artfacts",
+    name = "compiler_includes",
     srcs = glob([
-        "arm-none-eabi/**",
-        "lib/gcc/arm-none-eabi/%{compiler_version}/**",
-        'arm-none-eabi/include/c++/%{compiler_version}/**',
+        "lib/gcc/arm-none-eabi/%{compiler_version}/include/**",
+        "lib/gcc/arm-none-eabi/%{compiler_version}/include-fixed/**",
+        "arm-none-eabi/include/**",
+        "include/**",
     ]),
+)
+
+filegroup(
+    name = "compiler_libs",
+    srcs = glob([
+        "lib/gcc/arm-none-eabi/%{compiler_version}/*",
+        "arm-none-eabi/lib/*",
+        "lib/*",
+    ]),
+)
+
+filegroup(
+    name = "toolchains_bins",
+    srcs = glob([
+        "bin/**",
+        "arm-none-eabi/bin/**",
+    ]),
+)
+
+filegroup(
+    name = "compiler_pieces",
+    srcs = [
+        ":compiler_includes",
+        ":compiler_libs",
+    ],
 )
 
 filegroup(
     name = "compiler_files",
     srcs = [
-        ":compiler_artfacts",
+        ":compiler_pieces",
         ":cpp",
         ":cc",
         ":cxx",
@@ -156,7 +182,7 @@ filegroup(
 filegroup(
     name = "linker_files",
     srcs = [
-        ":compiler_artfacts",
+        ":compiler_pieces",
         ":cc",
         ":cxx",
         ":ld",
@@ -167,7 +193,7 @@ filegroup(
 filegroup(
     name = "coverage_files",
     srcs = [
-        ":compiler_artfacts",
+        ":compiler_pieces",
         ":cc",
         ":cxx",
         ":cov",
