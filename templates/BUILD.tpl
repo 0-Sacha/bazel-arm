@@ -1,7 +1,7 @@
 ""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("@bazel_utilities//toolchains:cc_toolchain_config.bzl", "cc_toolchain_config")
+load("@bazel-utilities//toolchains:cc_toolchain_config.bzl", "cc_toolchain_config")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -12,8 +12,8 @@ cc_toolchain_config(
     target_name = "%{target_name}",
     target_cpu = "%{target_cpu}",
     compiler = {
-        "name": "arm-none-eabi-gcc",
-        "base_name": "arm-none-eabi-",
+        "name": "%{arm_toolchain_type}-gcc",
+        "base_name": "%{arm_toolchain_type}-",
     },
     toolchain_bins = "//:compiler_components",
     flags = dicts.add(
@@ -23,11 +23,11 @@ cc_toolchain_config(
         }
     ),
     cxx_builtin_include_directories = [
-        "%{toolchain_path_prefix}arm-none-eabi/include",
-        "%{toolchain_path_prefix}lib/gcc/arm-none-eabi/%{compiler_version}/include",
-        "%{toolchain_path_prefix}lib/gcc/arm-none-eabi/%{compiler_version}/include-fixed",
-        "%{toolchain_path_prefix}arm-none-eabi/include/c++/%{compiler_version}/",
-        "%{toolchain_path_prefix}arm-none-eabi/include/c++/%{compiler_version}/arm-none-eabi",
+        "%{toolchain_path_prefix}%{arm_toolchain_type}/include",
+        "%{toolchain_path_prefix}lib/gcc/%{arm_toolchain_type}/%{compiler_version}/include",
+        "%{toolchain_path_prefix}lib/gcc/%{arm_toolchain_type}/%{compiler_version}/include-fixed",
+        "%{toolchain_path_prefix}%{arm_toolchain_type}/include/c++/%{compiler_version}/",
+        "%{toolchain_path_prefix}%{arm_toolchain_type}/include/c++/%{compiler_version}/%{arm_toolchain_type}",
     ],
 
     copts = %{copts},
@@ -37,8 +37,8 @@ cc_toolchain_config(
     defines = %{defines},
     includedirs = %{includedirs},
     linkdirs = [
-        "%{toolchain_path_prefix}arm-none-eabi/lib",
-        "%{toolchain_path_prefix}lib/gcc/arm-none-eabi/%{compiler_version}",
+        "%{toolchain_path_prefix}%{arm_toolchain_type}/lib",
+        "%{toolchain_path_prefix}lib/gcc/%{arm_toolchain_type}/%{compiler_version}",
     ] + %{linkdirs},
 )
 
@@ -70,62 +70,62 @@ toolchain(
 
 filegroup(
     name = "cpp",
-    srcs = glob(["bin/arm-none-eabi-cpp*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-cpp*"]),
 )
 
 filegroup(
     name = "cc",
-    srcs = glob(["bin/arm-none-eabi-gcc*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-gcc*"]),
 )
 
 filegroup(
     name = "cxx",
-    srcs = glob(["bin/arm-none-eabi-g++*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-g++*"]),
 )
 
 filegroup(
     name = "cov",
-    srcs = glob(["bin/arm-none-eabi-gcov*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-gcov*"]),
 )
 
 filegroup(
     name = "ar",
-    srcs = glob(["bin/arm-none-eabi-ar*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-ar*"]),
 )
 
 filegroup(
     name = "ld",
-    srcs = glob(["bin/arm-none-eabi-ld*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-ld*"]),
 )
 
 filegroup(
     name = "nm",
-    srcs = glob(["bin/arm-none-eabi-nm*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-nm*"]),
 )
 
 filegroup(
     name = "objcopy",
-    srcs = glob(["bin/arm-none-eabi-objcopy*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-objcopy*"]),
 )
 
 filegroup(
     name = "objdump",
-    srcs = glob(["bin/arm-none-eabi-objdump*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-objdump*"]),
 )
 
 filegroup(
     name = "strip",
-    srcs = glob(["bin/arm-none-eabi-strip*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-strip*"]),
 )
 
 filegroup(
     name = "as",
-    srcs = glob(["bin/arm-none-eabi-as*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-as*"]),
 )
 
 filegroup(
     name = "size",
-    srcs = glob(["bin/arm-none-eabi-size*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-size*"]),
 )
 
 filegroup(
@@ -222,7 +222,7 @@ filegroup(
 
 filegroup(
     name = "dbg",
-    srcs = glob(["bin/arm-none-eabi-gdb*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-gdb*"]),
 )
 
 filegroup(

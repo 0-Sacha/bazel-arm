@@ -2,7 +2,7 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 
-def _arm_none_eabi_all_files_impl(ctx):
+def _arm_all_files_impl(ctx):
     # buildifier: disable=print
     print("Copy '{}' to '{}'".format(ctx.file.binary, ctx.outputs.elf))
     ctx.actions.run(
@@ -44,8 +44,8 @@ def _arm_none_eabi_all_files_impl(ctx):
         ],
     )
 
-arm_none_eabi_all_files = rule(
-    implementation = _arm_none_eabi_all_files_impl,
+arm_all_files = rule(
+    implementation = _arm_all_files_impl,
     attrs = {
         'objcopy': attr.label(allow_single_file = True),
         "binary": attr.label(allow_single_file = True),
@@ -55,8 +55,8 @@ arm_none_eabi_all_files = rule(
     },
 )
 
-def arm_none_eabi_binary(name, arm_file_elf = None, arm_file_bin = None, arm_file_hex = None, **kwargs):
-    """arm_none_eabi_binary macro
+def arm_binary(name, arm_file_elf = None, arm_file_bin = None, arm_file_hex = None, **kwargs):
+    """arm_binary macro
 
     Args:
         name: The binary name
@@ -67,7 +67,7 @@ def arm_none_eabi_binary(name, arm_file_elf = None, arm_file_bin = None, arm_fil
     """
     binary_rule_name = "{}_raw_binary".format(name)
     cc_binary(name = binary_rule_name, **kwargs)
-    arm_none_eabi_all_files(
+    arm_all_files(
         name = name,
         objcopy = "@%{rctx_name}//:objcopy",
         binary = ":{}".format(binary_rule_name),

@@ -1,7 +1,7 @@
-"""arm-none-eabi Archives
+"""arm Archives
 """
 
-load("@bazel_utilities//toolchains:archives.bzl", "gen_archives_registry")
+load("@bazel-utilities//toolchains:archives.bzl", "gen_archives_registry")
 
 ARM_NONE_EABI_ARCHIVES_13_2_REL1 = {
     "version": "13.2.rel1",
@@ -35,3 +35,7 @@ ARM_NONE_EABI_ARCHIVES_13_2_REL1 = {
 ARM_NONE_EABI_ARCHIVES_REGISTRY = gen_archives_registry([
     ARM_NONE_EABI_ARCHIVES_13_2_REL1
 ])
+
+ARM_REGISTRY = {
+    "arm-none-eabi": ARM_NONE_EABI_ARCHIVES_REGISTRY
+}

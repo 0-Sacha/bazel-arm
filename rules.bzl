@@ -1,14 +1,25 @@
 ""
 
-load("@bazel_arm_none_eabi//:archives.bzl", "ARM_NONE_EABI_ARCHIVES_REGISTRY")
-load("@bazel_utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx")
+load("@bazel-arm//:archives.bzl", "ARM_REGISTRY")
+load("@bazel-utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx")
 
-def _arm_none_eabi_toolchain_impl(rctx):
+def _get_registry(toolchain_type, toolchain_version):
+    if toolchain_type not in ARM_REGISTRY:
+        # buildifier: disable=print
+        print("bazel-arm doesn't support arm toolchain type: {}".format(toolchain_type))
+        if toolchain_version not in ARM_REGISTRY[toolchain_type]:
+            # buildifier: disable=print
+            print("{} toolchain doesn't define version: {}".format(toolchain_type, toolchain_version))
+    return ARM_REGISTRY[toolchain_type][toolchain_version]
+
+def _arm_toolchain_impl(rctx):
     _, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
 
-    registry = ARM_NONE_EABI_ARCHIVES_REGISTRY[rctx.attr.version]
+    check_version(rctx.attr.arm_toolchain_type, rctx.attr.arm_toolchain_version)
+
+    registry = _get_registry(rctx.attr.arm_toolchain_type, rctx.attr.arm_toolchain_version)
     compiler_version = registry["details"]["compiler_version"]
-    toolchain_id = "arm_none_eabi_{}".format(compiler_version)
+    toolchain_id = "{}_{}".format(rctx.attr.arm_toolchain_type, compiler_version)
 
     target_compatible_with = []
     target_compatible_with += rctx.attr.target_compatible_with
@@ -21,7 +32,9 @@ def _arm_none_eabi_toolchain_impl(rctx):
         "%{toolchain_path_prefix}": "external/{}/".format(rctx.name),
         "%{host_name}": host_name,
         "%{toolchain_id}": toolchain_id,
-        "%{compiler_version}": compiler_version,
+        "%{arm_toolchain_type}": rctx.attr.arm_toolchain_type,
+        "%{arm_toolchain_version}": rctx.attr.arm_toolchain_version,
+        "%{compiler_version}": compiler_version
 
         "%{target_name}": rctx.attr.target_name,
         "%{target_cpu}": rctx.attr.target_cpu,
@@ -51,9 +64,10 @@ def _arm_none_eabi_toolchain_impl(rctx):
     archive = registry["archives"][host_name]
     rctx.download_and_extract(archive["url"], sha256 = archive["sha256"], stripPrefix = archive["strip_prefix"])
 
-_arm_none_eabi_toolchain = repository_rule(
+_arm_toolchain = repository_rule(
     attrs = {
-        'version': attr.string(default = "latest"),
+        'arm_toolchain_type': attr.string(mandatory = True),
+        'arm_toolchain_version': attr.string(default = "latest"),
 
         'target_name': attr.string(default = "local"),
         'target_cpu': attr.string(default = ""),
@@ -70,12 +84,13 @@ _arm_none_eabi_toolchain = repository_rule(
         'flags_packed': attr.string_dict(default = {}),
     },
     local = False,
-    implementation = _arm_none_eabi_toolchain_impl,
+    implementation = _arm_toolchain_impl,
 )
 
-def arm_none_eabi_toolchain(
+def arm_toolchain(
         name,
-        version = "latest",
+        arm_toolchain_type,
+        arm_toolchain_version = "latest",
 
         target_name = "local",
         target_cpu = "",
@@ -91,13 +106,14 @@ def arm_none_eabi_toolchain(
         
         flags_packed = {},
     ):
-    """arm-none-eabi Toolchain
+    """arm Toolchain
 
     This macro create a repository containing all files needded to get an hermetic toolchain
 
     Args:
         name: Name of the repo that will be created
-        version: The arm-none-eabi archive version
+        arm_toolchain_type: The arm type to use, avaible: [ arm-none-eabi ]
+        arm_toolchain_version: The arm archive version
 
         target_name: The target name
         target_cpu: The target cpu name
@@ -111,9 +127,9 @@ def arm_none_eabi_toolchain(
         includedirs: includedirs
         linkdirs: linkdirs
         
-        flags_packed: pack of flags, checkout the syntax at bazel_utilities
+        flags_packed: pack of flags, checkout the syntax at bazel-utilities
     """
-    _arm_none_eabi_toolchain(
+    _arm_toolchain(
         name = name,
         version = version,
 
@@ -132,4 +148,5 @@ def arm_none_eabi_toolchain(
         flags_packed = flags_packed,
     )
 
-    native.register_toolchains("@{}//:toolchain_arm_none_eabi_{}".format(name, ARM_NONE_EABI_ARCHIVES_REGISTRY[version]["details"]["compiler_version"]))
+    registry = _get_registry(arm_toolchain_type, arm_toolchain_version)
+    native.register_toolchains("@{}//:toolchain_{}_{}".format(name, rctx.attr.arm_toolchain_type, registry["details"]["compiler_version"]))
