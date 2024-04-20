@@ -1,7 +1,7 @@
 ""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("@bazel-utilities//toolchains:cc_toolchain_config.bzl", "cc_toolchain_config")
+load("@bazel_utilities//toolchains:cc_toolchain_config.bzl", "cc_toolchain_config")
 
 package(default_visibility = ["//visibility:public"])
 

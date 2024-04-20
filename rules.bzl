@@ -1,12 +1,12 @@
 ""
 
-load("@bazel-arm//:archives.bzl", "ARM_REGISTRY")
+load("@bazel_arm//:archives.bzl", "ARM_REGISTRY")
 load("@bazel_utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx", "HOST_EXTENTION")
 
 def _get_registry(toolchain_type, toolchain_version):
     if toolchain_type not in ARM_REGISTRY:
         # buildifier: disable=print
-        print("bazel-arm doesn't support arm toolchain type: {}".format(toolchain_type))
+        print("bazel_arm doesn't support arm toolchain type: {}".format(toolchain_type))
         if toolchain_version not in ARM_REGISTRY[toolchain_type]:
             # buildifier: disable=print
             print("{} toolchain doesn't define version: {}".format(toolchain_type, toolchain_version))
@@ -128,7 +128,7 @@ def arm_toolchain(
         includedirs: includedirs
         linkdirs: linkdirs
         
-        flags_packed: pack of flags, checkout the syntax at bazel-utilities
+        flags_packed: pack of flags, checkout the syntax at bazel_utilities
     """
     _arm_toolchain(
         name = name,
