@@ -13,9 +13,7 @@ def _get_registry(toolchain_type, toolchain_version):
     return ARM_REGISTRY[toolchain_type][toolchain_version]
 
 def _arm_toolchain_impl(rctx):
-    _, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
-
-    check_version(rctx.attr.arm_toolchain_type, rctx.attr.arm_toolchain_version)
+    host_os, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
 
     registry = _get_registry(rctx.attr.arm_toolchain_type, rctx.attr.arm_toolchain_version)
     compiler_version = registry["details"]["compiler_version"]
@@ -35,7 +33,7 @@ def _arm_toolchain_impl(rctx):
         "%{toolchain_id}": toolchain_id,
         "%{arm_toolchain_type}": rctx.attr.arm_toolchain_type,
         "%{arm_toolchain_version}": rctx.attr.arm_toolchain_version,
-        "%{compiler_version}": compiler_version
+        "%{compiler_version}": compiler_version,
 
         "%{target_name}": rctx.attr.target_name,
         "%{target_cpu}": rctx.attr.target_cpu,
@@ -59,6 +57,11 @@ def _arm_toolchain_impl(rctx):
     rctx.template(
         "rules.bzl",
         Label("//templates:rules.bzl.tpl"),
+        substitutions
+    )
+    rctx.template(
+        "vscode.bzl",
+        Label("//templates:vscode.bzl.tpl"),
         substitutions
     )
 
@@ -132,7 +135,8 @@ def arm_toolchain(
     """
     _arm_toolchain(
         name = name,
-        version = version,
+        arm_toolchain_type = arm_toolchain_type,
+        arm_toolchain_version = arm_toolchain_version,
 
         target_name = target_name,
         target_cpu = target_cpu,
@@ -150,4 +154,4 @@ def arm_toolchain(
     )
 
     registry = _get_registry(arm_toolchain_type, arm_toolchain_version)
-    native.register_toolchains("@{}//:toolchain_{}_{}".format(name, rctx.attr.arm_toolchain_type, registry["details"]["compiler_version"]))
+    native.register_toolchains("@{}//:toolchain_{}_{}".format(name, arm_toolchain_type, registry["details"]["compiler_version"]))
