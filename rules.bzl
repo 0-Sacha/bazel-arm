@@ -1,7 +1,7 @@
 ""
 
 load("@bazel-arm//:archives.bzl", "ARM_REGISTRY")
-load("@bazel-utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx")
+load("@bazel_utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx", "HOST_EXTENTION")
 
 def _get_registry(toolchain_type, toolchain_version):
     if toolchain_type not in ARM_REGISTRY:
@@ -29,6 +29,7 @@ def _arm_toolchain_impl(rctx):
 
     substitutions = {
         "%{rctx_name}": rctx.name,
+        "%{extention}": HOST_EXTENTION[host_os],
         "%{toolchain_path_prefix}": "external/{}/".format(rctx.name),
         "%{host_name}": host_name,
         "%{toolchain_id}": toolchain_id,
