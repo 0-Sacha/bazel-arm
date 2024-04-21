@@ -2,75 +2,83 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 
-def _arm_none_eabi_all_files_impl(ctx):
+def _arm_all_files_impl(ctx):
     # buildifier: disable=print
-    print("Copy '{}' to '{}'".format(ctx.file.binary, ctx.outputs.elf))
+    print("Copy '{}' to '{}'".format(ctx.file.dep, ctx.outputs.elf))
     ctx.actions.run(
-        inputs = [ ctx.file.binary ],
+        inputs = [ ctx.file.dep ],
         outputs = [ ctx.outputs.elf ],
         executable = "cp",
         arguments = [
-            ctx.file.binary.path,
+            ctx.file.dep.path,
             ctx.outputs.elf.path
         ],
     )
 
     # buildifier: disable=print
-    print("Create bin file '{}' from '{}'".format(ctx.outputs.bin, ctx.file.binary))
+    print("Create bin file '{}' from '{}'".format(ctx.outputs.bin, ctx.file.dep))
     ctx.actions.run(
-        inputs = [ ctx.file.binary ],
+        inputs = [ ctx.file.dep ],
         outputs = [ ctx.outputs.bin ],
         executable = ctx.file.objcopy.path,
         arguments = [
             "-O",
-            "binary",
+            "dep",
             "-S",
-            ctx.file.binary.path,
+            ctx.file.dep.path,
             ctx.outputs.bin.path
         ],
     )
 
     # buildifier: disable=print
-    print("Create hex file '{}' from '{}'".format(ctx.outputs.hex, ctx.file.binary))
+    print("Create hex file '{}' from '{}'".format(ctx.outputs.hex, ctx.file.dep))
     ctx.actions.run(
-        inputs = [ ctx.file.binary ],
+        inputs = [ ctx.file.dep ],
         outputs = [ ctx.outputs.hex ],
         executable = ctx.file.objcopy.path,
         arguments = [
             "-O",
             "ihex",
-            ctx.file.binary.path,
+            ctx.file.dep.path,
             ctx.outputs.hex.path
         ],
     )
+    
+    return [
+        DebugPackageInfo(
+            target_label = ctx.attr.dep.label,
+            unstripped_file = ctx.outputs.elf,
+        )
+    ]
 
-arm_none_eabi_all_files = rule(
-    implementation = _arm_none_eabi_all_files_impl,
+arm_all_files = rule(
+    implementation = _arm_all_files_impl,
     attrs = {
         'objcopy': attr.label(allow_single_file = True),
-        "binary": attr.label(allow_single_file = True),
+        "dep": attr.label(allow_single_file = True),
         "elf": attr.output(),
         "bin": attr.output(),
         "hex": attr.output(),
     },
+    provides = [DebugPackageInfo],
 )
 
-def arm_none_eabi_binary(name, arm_file_elf = None, arm_file_bin = None, arm_file_hex = None, **kwargs):
-    """arm_none_eabi_binary macro
+def arm_binary(name, arm_file_elf = None, arm_file_bin = None, arm_file_hex = None, **kwargs):
+    """arm_binary macro
 
     Args:
-        name: The binary name
+        name: The dep name
         arm_file_elf: The output elf file name
         arm_file_bin: The output bin file name
         arm_file_hex: The output hex file name
-        **kwargs: All others cc_binary attributes 
+        **kwargs: All others cc_binary attributes
     """
     binary_rule_name = "{}_raw_binary".format(name)
     cc_binary(name = binary_rule_name, **kwargs)
-    arm_none_eabi_all_files(
+    arm_all_files(
         name = name,
-        toolchain_bins = "@{rctx_name}//:objcopy",
-        binary = ":{}".format(binary_rule_name),
+        objcopy = "@%{rctx_name}//:objcopy",
+        dep = ":{}".format(binary_rule_name),
         elf = "{}.elf".format(name) if arm_file_elf == None else arm_file_elf,
         bin = "{}.bin".format(name) if arm_file_bin == None else arm_file_bin,
         hex = "{}.hex".format(name) if arm_file_hex == None else arm_file_hex

@@ -1,8 +1,8 @@
 
-"""bazel_arm_none_eabi
+"""bazel_arm
 """
 module(
-    name = "bazel_arm_none_eabi",
+    name = "bazel_arm",
     version = "0.0.1",
-    repo_name = "sacha_bazel_arm_none_eabi",
+    repo_name = "sacha_bazel_arm",
 )
