@@ -1,5 +1,6 @@
 
-""
+"""bazel_arm_none_eabi
+"""
 module(
     name = "bazel_arm_none_eabi",
     version = "0.0.1",
