@@ -1,22 +1,51 @@
 ""
 
 load("@bazel_arm//:archives.bzl", "ARM_REGISTRY")
+load("@bazel_utilities//toolchains:archives.bzl", "get_archive_from_registry")
 load("@bazel_utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx", "HOST_EXTENTION")
 
-def _get_registry(toolchain_type, toolchain_version):
-    if toolchain_type not in ARM_REGISTRY:
-        # buildifier: disable=print
-        print("bazel_arm doesn't support arm toolchain type: {}".format(toolchain_type))
-        if toolchain_version not in ARM_REGISTRY[toolchain_type]:
-            # buildifier: disable=print
-            print("{} toolchain doesn't define version: {}".format(toolchain_type, toolchain_version))
-    return ARM_REGISTRY[toolchain_type][toolchain_version]
+def _arm_compiler_archive_impl(rctx):
+    host_os, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
+    
+    substitutions = {
+        "%{rctx_name}": rctx.name,
+        "%{rctx_path}": "external/{}/".format(rctx.name),
+        "%{extention}": HOST_EXTENTION[host_os],
+        "%{host_name}": host_name,
+        "%{arm_toolchain_type}": rctx.attr.arm_toolchain_type,
+        "%{arm_toolchain_version}": rctx.attr.arm_toolchain_version,
+        "%{compiler_version}": rctx.attr.compiler_version,
+    }
+    rctx.template(
+        "BUILD",
+        Label("//templates:BUILD.compiler.tpl"),
+        substitutions
+    )
+
+    archives = json.decode(rctx.attr.archives)
+    archive = archives[host_name]
+
+    rctx.download_and_extract(
+        url = archive["url"],
+        sha256 = archive["sha256"],
+        stripPrefix = archive["strip_prefix"],
+    )
+
+arm_compiler_archive = repository_rule(
+    implementation = _arm_compiler_archive_impl,
+    attrs = {
+        'arm_toolchain_type': attr.string(mandatory = True),
+        'arm_toolchain_version': attr.string(default = "latest"),
+        'compiler_version': attr.string(mandatory = True),
+        'archives': attr.string(mandatory = True),
+    },
+    local = False,
+)
+
 
 def _arm_toolchain_impl(rctx):
     host_os, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
 
-    registry = _get_registry(rctx.attr.arm_toolchain_type, rctx.attr.arm_toolchain_version)
-    compiler_version = registry["details"]["compiler_version"]
     toolchain_id = "{}_{}".format(rctx.attr.arm_toolchain_type, compiler_version)
 
     target_compatible_with = []
@@ -27,13 +56,15 @@ def _arm_toolchain_impl(rctx):
 
     substitutions = {
         "%{rctx_name}": rctx.name,
+        "%{rctx_path}": "external/{}/".format(rctx.name),
         "%{extention}": HOST_EXTENTION[host_os],
-        "%{toolchain_path_prefix}": "external/{}/".format(rctx.name),
         "%{host_name}": host_name,
         "%{toolchain_id}": toolchain_id,
         "%{arm_toolchain_type}": rctx.attr.arm_toolchain_type,
         "%{arm_toolchain_version}": rctx.attr.arm_toolchain_version,
-        "%{compiler_version}": compiler_version,
+        "%{compiler_version}": rctx.attr.compiler_version,
+        "%{compiler_package}": "@{}//".format(rctx.attr.compiler_package) if rctx.attr.compiler_package != "" else "",
+        "%{compiler_package_path}": "external/{}/".format(rctx.attr.compiler_package),
 
         "%{target_name}": rctx.attr.target_name,
         "%{target_cpu}": rctx.attr.target_cpu,
@@ -65,13 +96,26 @@ def _arm_toolchain_impl(rctx):
         substitutions
     )
 
-    archive = registry["archives"][host_name]
-    rctx.download_and_extract(archive["url"], sha256 = archive["sha256"], stripPrefix = archive["strip_prefix"])
+    archives = json.decode(rctx.attr.archives)
+    archive = archives[host_name]
+
+    if rctx.attr.local_download:
+        rctx.download_and_extract(
+            url = archive["url"],
+            sha256 = archive["sha256"],
+            stripPrefix = archive["strip_prefix"],
+        )
 
 _arm_toolchain = repository_rule(
+    implementation = _arm_toolchain_impl,
     attrs = {
         'arm_toolchain_type': attr.string(mandatory = True),
         'arm_toolchain_version': attr.string(default = "latest"),
+        'compiler_version': attr.string(mandatory = True),
+
+        'local_download': attr.bool(default = True),
+        'archives': attr.string(mandatory = True),
+        'compiler_package': attr.string(default = "//"),
 
         'target_name': attr.string(default = "local"),
         'target_cpu': attr.string(default = ""),
@@ -88,7 +132,6 @@ _arm_toolchain = repository_rule(
         'flags_packed': attr.string_dict(default = {}),
     },
     local = False,
-    implementation = _arm_toolchain_impl,
 )
 
 def arm_toolchain(
@@ -109,6 +152,9 @@ def arm_toolchain(
         linkdirs = [],
         
         flags_packed = {},
+
+        local_download = True,
+        registry = ARM_REGISTRY,
     ):
     """arm Toolchain
 
@@ -132,11 +178,33 @@ def arm_toolchain(
         linkdirs: linkdirs
         
         flags_packed: pack of flags, checkout the syntax at bazel_utilities
+
+        local_download: wether the archive should be downloaded in the same repository (True) or in its own repo
+        registry: The arm registry to use, to allow close environement to provide their own mirroir/url
     """
+    compiler_package = ""
+
+    archive = get_archive_from_registry(registry, arm_toolchain_type, arm_toolchain_version)
+
+    if local_download == False:
+        compiler_package = "{}_{}".format(arm_toolchain_type, arm_toolchain_version)
+        arm_compiler_archive(
+            name = compiler_package,
+            arm_toolchain_type = arm_toolchain_type,
+            arm_toolchain_version = arm_toolchain_version,
+            compiler_version = archive["details"]["compiler_version"],
+            archives = json.encode(archive["archives"]),
+        )
+
     _arm_toolchain(
         name = name,
         arm_toolchain_type = arm_toolchain_type,
         arm_toolchain_version = arm_toolchain_version,
+        compiler_version = archive["details"]["compiler_version"],
+
+        local_download = local_download,
+        archives = json.encode(archive["archives"]),
+        compiler_package = compiler_package,
 
         target_name = target_name,
         target_cpu = target_cpu,
@@ -153,5 +221,4 @@ def arm_toolchain(
         flags_packed = flags_packed,
     )
 
-    registry = _get_registry(arm_toolchain_type, arm_toolchain_version)
-    native.register_toolchains("@{}//:toolchain_{}_{}".format(name, arm_toolchain_type, registry["details"]["compiler_version"]))
+    native.register_toolchains("@{}//:toolchain_{}_{}".format(name, arm_toolchain_type, archive["details"]["compiler_version"]))

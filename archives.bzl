@@ -4,10 +4,14 @@
 load("@bazel_utilities//toolchains:archives.bzl", "gen_archives_registry")
 
 ARM_NONE_EABI_ARCHIVES_13_2_REL1 = {
+    "toolchain": "arm-none-eabi",
     "version": "13.2.rel1",
     "version-short": "13.2",
     "latest": True,
-    "details": { "compiler_version": "13.2.1" },
+    "details": {
+        "compiler_version": "13.2.1",
+        "build_file": "compiler.BUILD_arm"
+    },
     "archives": {
         "windows_x86_64": {
             "url": "https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-mingw-w64-i686-arm-none-eabi.zip?rev=93fda279901c4c0299e03e5c4899b51f&hash=A3C5FF788BE90810E121091C873E3532336C8D46",
@@ -32,10 +36,6 @@ ARM_NONE_EABI_ARCHIVES_13_2_REL1 = {
     }
 }
 
-ARM_NONE_EABI_ARCHIVES_REGISTRY = gen_archives_registry([
+ARM_REGISTRY = gen_archives_registry([
     ARM_NONE_EABI_ARCHIVES_13_2_REL1
 ])
-
-ARM_REGISTRY = {
-    "arm-none-eabi": ARM_NONE_EABI_ARCHIVES_REGISTRY
-}
