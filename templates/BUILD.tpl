@@ -15,7 +15,7 @@ cc_toolchain_config(
         "name": "%{arm_toolchain_type}-gcc",
         "base_name": "%{arm_toolchain_type}-",
     },
-    toolchain_bins = "//:compiler_components",
+    toolchain_bins = "%{compiler_package}:compiler_components",
     flags = dicts.add(
         %{flags_packed},
         {
@@ -23,11 +23,11 @@ cc_toolchain_config(
         }
     ),
     cxx_builtin_include_directories = [
-        "%{toolchain_path_prefix}%{arm_toolchain_type}/include",
-        "%{toolchain_path_prefix}lib/gcc/%{arm_toolchain_type}/%{compiler_version}/include",
-        "%{toolchain_path_prefix}lib/gcc/%{arm_toolchain_type}/%{compiler_version}/include-fixed",
-        "%{toolchain_path_prefix}%{arm_toolchain_type}/include/c++/%{compiler_version}/",
-        "%{toolchain_path_prefix}%{arm_toolchain_type}/include/c++/%{compiler_version}/%{arm_toolchain_type}",
+        "%{compiler_package_path}%{arm_toolchain_type}/include",
+        "%{compiler_package_path}lib/gcc/%{arm_toolchain_type}/%{compiler_version}/include",
+        "%{compiler_package_path}lib/gcc/%{arm_toolchain_type}/%{compiler_version}/include-fixed",
+        "%{compiler_package_path}%{arm_toolchain_type}/include/c++/%{compiler_version}/",
+        "%{compiler_package_path}%{arm_toolchain_type}/include/c++/%{compiler_version}/%{arm_toolchain_type}",
     ],
 
     copts = %{copts},
@@ -37,8 +37,8 @@ cc_toolchain_config(
     defines = %{defines},
     includedirs = %{includedirs},
     linkdirs = [
-        "%{toolchain_path_prefix}%{arm_toolchain_type}/lib",
-        "%{toolchain_path_prefix}lib/gcc/%{arm_toolchain_type}/%{compiler_version}",
+        "%{compiler_package_path}%{arm_toolchain_type}/lib",
+        "%{compiler_package_path}lib/gcc/%{arm_toolchain_type}/%{compiler_version}",
     ] + %{linkdirs},
 )
 
@@ -47,22 +47,22 @@ cc_toolchain(
     toolchain_identifier = "%{toolchain_id}",
     toolchain_config = ":cc_toolchain_config_%{toolchain_id}",
     
-    all_files = "//:compiler_pieces",
-    compiler_files = "//:compiler_files",
-    linker_files = "//:linker_files",
-    ar_files = "//:ar",
-    as_files = "//:as",
-    objcopy_files = "//:objcopy",
-    strip_files = "//:strip",
-    dwp_files = "//:dwp",
-    coverage_files = "//:coverage_files",
+    all_files = "%{compiler_package}:compiler_pieces",
+    compiler_files = "%{compiler_package}:compiler_files",
+    linker_files = "%{compiler_package}:linker_files",
+    ar_files = "%{compiler_package}:ar",
+    as_files = "%{compiler_package}:as",
+    objcopy_files = "%{compiler_package}:objcopy",
+    strip_files = "%{compiler_package}:strip",
+    dwp_files = "%{compiler_package}:dwp",
+    coverage_files = "%{compiler_package}:coverage_files",
     supports_param_files = 0
 )
 
 toolchain(
     name = "toolchain_%{toolchain_id}",
     toolchain = ":cc_toolchain_%{toolchain_id}",
-    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+    toolchain_type = "@bazel_tools%{compiler_package}tools/cpp:toolchain_type",
 
     target_compatible_with = %{target_compatible_with},
 )
@@ -70,67 +70,67 @@ toolchain(
 
 filegroup(
     name = "cpp",
-    srcs = glob(["bin/%{arm_toolchain_type}-cpp%{extention}"]),
+    srcs = ["bin/%{arm_toolchain_type}-cpp%{extention}"],
 )
 
 filegroup(
     name = "cc",
-    srcs = glob(["bin/%{arm_toolchain_type}-gcc%{extention}"]),
+    srcs = ["bin/%{arm_toolchain_type}-gcc%{extention}"],
 )
 
 filegroup(
     name = "cxx",
-    srcs = glob(["bin/%{arm_toolchain_type}-g++%{extention}"]),
+    srcs = ["bin/%{arm_toolchain_type}-g++%{extention}"],
 )
 
 filegroup(
     name = "cov",
-    srcs = glob(["bin/%{arm_toolchain_type}-gcov%{extention}"]),
+    srcs = ["bin/%{arm_toolchain_type}-gcov%{extention}"],
 )
 
 filegroup(
     name = "ar",
-    srcs = glob(["bin/%{arm_toolchain_type}-ar%{extention}"]),
+    srcs = ["bin/%{arm_toolchain_type}-ar%{extention}"],
 )
 
 filegroup(
     name = "ld",
-    srcs = glob(["bin/%{arm_toolchain_type}-ld%{extention}"]),
+    srcs = ["bin/%{arm_toolchain_type}-ld%{extention}"],
 )
 
 filegroup(
     name = "nm",
-    srcs = glob(["bin/%{arm_toolchain_type}-nm%{extention}"]),
+    srcs = ["bin/%{arm_toolchain_type}-nm%{extention}"],
 )
 
 filegroup(
     name = "objcopy",
-    srcs = glob(["bin/%{arm_toolchain_type}-objcopy%{extention}"]),
+    srcs = ["bin/%{arm_toolchain_type}-objcopy%{extention}"],
 )
 
 filegroup(
     name = "objdump",
-    srcs = glob(["bin/%{arm_toolchain_type}-objdump%{extention}"]),
+    srcs = ["bin/%{arm_toolchain_type}-objdump%{extention}"],
 )
 
 filegroup(
     name = "strip",
-    srcs = glob(["bin/%{arm_toolchain_type}-strip%{extention}"]),
+    srcs = ["bin/%{arm_toolchain_type}-strip%{extention}"],
 )
 
 filegroup(
     name = "as",
-    srcs = glob(["bin/%{arm_toolchain_type}-as%{extention}"]),
+    srcs = ["bin/%{arm_toolchain_type}-as%{extention}"],
 )
 
 filegroup(
     name = "size",
-    srcs = glob(["bin/%{arm_toolchain_type}-size%{extention}"]),
+    srcs = ["bin/%{arm_toolchain_type}-size%{extention}"],
 )
 
 filegroup(
     name = "dwp",
-    srcs = glob([]),
+    srcs = [],
 )
 
 
@@ -222,7 +222,7 @@ filegroup(
 
 filegroup(
     name = "dbg",
-    srcs = glob(["bin/%{arm_toolchain_type}-gdb%{extention}"]),
+    srcs = ["bin/%{arm_toolchain_type}-gdb%{extention}"],
 )
 
 filegroup(
