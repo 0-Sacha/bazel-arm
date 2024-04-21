@@ -1,21 +1,19 @@
 ""
 
-load("@bazel-arm//:archives.bzl", "ARM_REGISTRY")
-load("@bazel-utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx")
+load("@bazel_arm//:archives.bzl", "ARM_REGISTRY")
+load("@bazel_utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx", "HOST_EXTENTION")
 
 def _get_registry(toolchain_type, toolchain_version):
     if toolchain_type not in ARM_REGISTRY:
         # buildifier: disable=print
-        print("bazel-arm doesn't support arm toolchain type: {}".format(toolchain_type))
+        print("bazel_arm doesn't support arm toolchain type: {}".format(toolchain_type))
         if toolchain_version not in ARM_REGISTRY[toolchain_type]:
             # buildifier: disable=print
             print("{} toolchain doesn't define version: {}".format(toolchain_type, toolchain_version))
     return ARM_REGISTRY[toolchain_type][toolchain_version]
 
 def _arm_toolchain_impl(rctx):
-    _, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
-
-    check_version(rctx.attr.arm_toolchain_type, rctx.attr.arm_toolchain_version)
+    host_os, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
 
     registry = _get_registry(rctx.attr.arm_toolchain_type, rctx.attr.arm_toolchain_version)
     compiler_version = registry["details"]["compiler_version"]
@@ -29,12 +27,13 @@ def _arm_toolchain_impl(rctx):
 
     substitutions = {
         "%{rctx_name}": rctx.name,
+        "%{extention}": HOST_EXTENTION[host_os],
         "%{toolchain_path_prefix}": "external/{}/".format(rctx.name),
         "%{host_name}": host_name,
         "%{toolchain_id}": toolchain_id,
         "%{arm_toolchain_type}": rctx.attr.arm_toolchain_type,
         "%{arm_toolchain_version}": rctx.attr.arm_toolchain_version,
-        "%{compiler_version}": compiler_version
+        "%{compiler_version}": compiler_version,
 
         "%{target_name}": rctx.attr.target_name,
         "%{target_cpu}": rctx.attr.target_cpu,
@@ -58,6 +57,11 @@ def _arm_toolchain_impl(rctx):
     rctx.template(
         "rules.bzl",
         Label("//templates:rules.bzl.tpl"),
+        substitutions
+    )
+    rctx.template(
+        "vscode.bzl",
+        Label("//templates:vscode.bzl.tpl"),
         substitutions
     )
 
@@ -127,11 +131,12 @@ def arm_toolchain(
         includedirs: includedirs
         linkdirs: linkdirs
         
-        flags_packed: pack of flags, checkout the syntax at bazel-utilities
+        flags_packed: pack of flags, checkout the syntax at bazel_utilities
     """
     _arm_toolchain(
         name = name,
-        version = version,
+        arm_toolchain_type = arm_toolchain_type,
+        arm_toolchain_version = arm_toolchain_version,
 
         target_name = target_name,
         target_cpu = target_cpu,
@@ -149,4 +154,4 @@ def arm_toolchain(
     )
 
     registry = _get_registry(arm_toolchain_type, arm_toolchain_version)
-    native.register_toolchains("@{}//:toolchain_{}_{}".format(name, rctx.attr.arm_toolchain_type, registry["details"]["compiler_version"]))
+    native.register_toolchains("@{}//:toolchain_{}_{}".format(name, arm_toolchain_type, registry["details"]["compiler_version"]))

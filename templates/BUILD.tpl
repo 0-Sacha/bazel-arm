@@ -1,7 +1,7 @@
 ""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("@bazel-utilities//toolchains:cc_toolchain_config.bzl", "cc_toolchain_config")
+load("@bazel_utilities//toolchains:cc_toolchain_config.bzl", "cc_toolchain_config")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -70,62 +70,62 @@ toolchain(
 
 filegroup(
     name = "cpp",
-    srcs = glob(["bin/%{arm_toolchain_type}-cpp*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-cpp%{extention}"]),
 )
 
 filegroup(
     name = "cc",
-    srcs = glob(["bin/%{arm_toolchain_type}-gcc*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-gcc%{extention}"]),
 )
 
 filegroup(
     name = "cxx",
-    srcs = glob(["bin/%{arm_toolchain_type}-g++*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-g++%{extention}"]),
 )
 
 filegroup(
     name = "cov",
-    srcs = glob(["bin/%{arm_toolchain_type}-gcov*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-gcov%{extention}"]),
 )
 
 filegroup(
     name = "ar",
-    srcs = glob(["bin/%{arm_toolchain_type}-ar*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-ar%{extention}"]),
 )
 
 filegroup(
     name = "ld",
-    srcs = glob(["bin/%{arm_toolchain_type}-ld*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-ld%{extention}"]),
 )
 
 filegroup(
     name = "nm",
-    srcs = glob(["bin/%{arm_toolchain_type}-nm*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-nm%{extention}"]),
 )
 
 filegroup(
     name = "objcopy",
-    srcs = glob(["bin/%{arm_toolchain_type}-objcopy*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-objcopy%{extention}"]),
 )
 
 filegroup(
     name = "objdump",
-    srcs = glob(["bin/%{arm_toolchain_type}-objdump*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-objdump%{extention}"]),
 )
 
 filegroup(
     name = "strip",
-    srcs = glob(["bin/%{arm_toolchain_type}-strip*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-strip%{extention}"]),
 )
 
 filegroup(
     name = "as",
-    srcs = glob(["bin/%{arm_toolchain_type}-as*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-as%{extention}"]),
 )
 
 filegroup(
     name = "size",
-    srcs = glob(["bin/%{arm_toolchain_type}-size*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-size%{extention}"]),
 )
 
 filegroup(
@@ -222,7 +222,7 @@ filegroup(
 
 filegroup(
     name = "dbg",
-    srcs = glob(["bin/%{arm_toolchain_type}-gdb*"]),
+    srcs = glob(["bin/%{arm_toolchain_type}-gdb%{extention}"]),
 )
 
 filegroup(
