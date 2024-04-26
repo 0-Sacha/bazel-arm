@@ -46,7 +46,7 @@ arm_compiler_archive = repository_rule(
 def _arm_toolchain_impl(rctx):
     host_os, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
 
-    toolchain_id = "{}_{}".format(rctx.attr.arm_toolchain_type, compiler_version)
+    toolchain_id = "{}_{}".format(rctx.attr.arm_toolchain_type, rctx.attr.compiler_version)
 
     target_compatible_with = []
     target_compatible_with += rctx.attr.target_compatible_with
@@ -54,17 +54,24 @@ def _arm_toolchain_impl(rctx):
     flags_packed = {}
     flags_packed.update(rctx.attr.flags_packed)
 
+    toolchain_path = "external/{}/".format(rctx.name)
+    compiler_package = ""
+    compiler_package_path = toolchain_path
+    if rctx.attr.local_download == False:
+        compiler_package = "@{}//".format(rctx.attr.compiler_package_name)
+        compiler_package_path = "external/{}/".format(rctx.attr.compiler_package_name)
+
     substitutions = {
         "%{rctx_name}": rctx.name,
-        "%{rctx_path}": "external/{}/".format(rctx.name),
+        "%{rctx_path}": toolchain_path,
         "%{extention}": HOST_EXTENTION[host_os],
         "%{host_name}": host_name,
         "%{toolchain_id}": toolchain_id,
         "%{arm_toolchain_type}": rctx.attr.arm_toolchain_type,
         "%{arm_toolchain_version}": rctx.attr.arm_toolchain_version,
         "%{compiler_version}": rctx.attr.compiler_version,
-        "%{compiler_package}": "@{}//".format(rctx.attr.compiler_package) if rctx.attr.compiler_package != "" else "",
-        "%{compiler_package_path}": "external/{}/".format(rctx.attr.compiler_package),
+        "%{compiler_package}": compiler_package,
+        "%{compiler_package_path}": compiler_package_path,
 
         "%{target_name}": rctx.attr.target_name,
         "%{target_cpu}": rctx.attr.target_cpu,
@@ -115,7 +122,7 @@ _arm_toolchain = repository_rule(
 
         'local_download': attr.bool(default = True),
         'archives': attr.string(mandatory = True),
-        'compiler_package': attr.string(default = "//"),
+        'compiler_package_name': attr.string(default = "//"),
 
         'target_name': attr.string(default = "local"),
         'target_cpu': attr.string(default = ""),
@@ -182,14 +189,14 @@ def arm_toolchain(
         local_download: wether the archive should be downloaded in the same repository (True) or in its own repo
         registry: The arm registry to use, to allow close environement to provide their own mirroir/url
     """
-    compiler_package = ""
+    compiler_package_name = ""
 
     archive = get_archive_from_registry(registry, arm_toolchain_type, arm_toolchain_version)
 
     if local_download == False:
-        compiler_package = "{}_{}".format(arm_toolchain_type, arm_toolchain_version)
+        compiler_package_name = "archive_{}_{}".format(arm_toolchain_type, arm_toolchain_version)
         arm_compiler_archive(
-            name = compiler_package,
+            name = compiler_package_name,
             arm_toolchain_type = arm_toolchain_type,
             arm_toolchain_version = arm_toolchain_version,
             compiler_version = archive["details"]["compiler_version"],
@@ -204,7 +211,7 @@ def arm_toolchain(
 
         local_download = local_download,
         archives = json.encode(archive["archives"]),
-        compiler_package = compiler_package,
+        compiler_package_name = compiler_package_name,
 
         target_name = target_name,
         target_cpu = target_cpu,

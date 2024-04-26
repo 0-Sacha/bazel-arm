@@ -91,8 +91,8 @@ filegroup(
 filegroup(
     name = "toolchains_bins",
     srcs = glob([
-        "bin/**",
-        "arm-none-eabi/bin/**",
+        "bin/*%{extention}",
+        "arm-none-eabi/bin/*%{extention}",
     ]),
 )
 
@@ -139,18 +139,19 @@ filegroup(
 filegroup(
     name = "compiler_components",
     srcs = [
-        "cpp",
-        "cc",
-        "cxx",
-        "cov",
-        "ar",
-        "ld",
-        "nm",
-        "objcopy",
-        "objdump",
-        "strip",
-        "as",
-        "size",
+        ":cpp",
+        ":cc",
+        ":cxx",
+        ":cov",
+        ":ar",
+        ":ld",
+        ":nm",
+        ":objcopy",
+        ":objdump",
+        ":strip",
+        ":as",
+        ":size",
+        ":dwp",
     ],
 )
 

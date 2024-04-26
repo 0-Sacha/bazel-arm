@@ -21,7 +21,7 @@ def _arm_all_files_impl(ctx):
         executable = ctx.file.objcopy.path,
         arguments = [
             "-O",
-            "dep",
+            "binary",
             "-S",
             ctx.file.dep.path,
             ctx.outputs.bin.path
