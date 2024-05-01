@@ -1,8 +1,8 @@
 ""
 
-load("@bazel_arm//:archives.bzl", "ARM_REGISTRY")
-load("@bazel_utilities//toolchains:archives.bzl", "get_archive_from_registry")
+load("@bazel_arm//:registry.bzl", "ARM_REGISTRY")
 load("@bazel_utilities//toolchains:hosts.bzl", "get_host_infos_from_rctx", "HOST_EXTENTION")
+load("@bazel_utilities//toolchains:registry.bzl", "get_archive_from_registry")
 
 def _arm_compiler_archive_impl(rctx):
     host_os, _, host_name = get_host_infos_from_rctx(rctx.os.name, rctx.os.arch)
@@ -48,12 +48,6 @@ def _arm_toolchain_impl(rctx):
 
     toolchain_id = "{}_{}".format(rctx.attr.arm_toolchain_type, rctx.attr.compiler_version)
 
-    target_compatible_with = []
-    target_compatible_with += rctx.attr.target_compatible_with
-
-    flags_packed = {}
-    flags_packed.update(rctx.attr.flags_packed)
-
     toolchain_path = "external/{}/".format(rctx.name)
     compiler_package = ""
     compiler_package_path = toolchain_path
@@ -75,7 +69,8 @@ def _arm_toolchain_impl(rctx):
 
         "%{target_name}": rctx.attr.target_name,
         "%{target_cpu}": rctx.attr.target_cpu,
-        "%{target_compatible_with}": json.encode(target_compatible_with),
+        "%{exec_compatible_with}": json.encode(rctx.attr.exec_compatible_with),
+        "%{target_compatible_with}": json.encode(rctx.attr.target_compatible_with),
 
         "%{copts}": json.encode(rctx.attr.copts),
         "%{conlyopts}": json.encode(rctx.attr.conlyopts),
@@ -85,7 +80,7 @@ def _arm_toolchain_impl(rctx):
         "%{includedirs}": json.encode(rctx.attr.includedirs),
         "%{linkdirs}": json.encode(rctx.attr.linkdirs),
 
-        "%{flags_packed}": json.encode(flags_packed),
+        "%{flags_packed}": json.encode(rctx.attr.flags_packed),
     }
     rctx.template(
         "BUILD",
