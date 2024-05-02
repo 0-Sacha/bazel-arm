@@ -157,6 +157,8 @@ def arm_toolchain(
 
         local_download = True,
         registry = ARM_REGISTRY,
+
+        auto_register_toolchain = True
     ):
     """arm Toolchain
 
@@ -183,6 +185,8 @@ def arm_toolchain(
 
         local_download: wether the archive should be downloaded in the same repository (True) or in its own repo
         registry: The arm registry to use, to allow close environement to provide their own mirroir/url
+
+        auto_register_toolchain: If the toolchain is registered to bazel using `register_toolchains`
     """
     compiler_package_name = ""
 
@@ -223,4 +227,5 @@ def arm_toolchain(
         flags_packed = flags_packed,
     )
 
-    native.register_toolchains("@{}//:toolchain_{}_{}".format(name, arm_toolchain_type, archive["details"]["compiler_version"]))
+    if auto_register_toolchain:
+        native.register_toolchains("@{}//:toolchain_{}_{}".format(name, arm_toolchain_type, archive["details"]["compiler_version"]))
