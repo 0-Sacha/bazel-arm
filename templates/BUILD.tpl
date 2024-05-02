@@ -64,6 +64,7 @@ toolchain(
     toolchain = ":cc_toolchain_%{toolchain_id}",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 
+    exec_compatible_with = %{exec_compatible_with},
     target_compatible_with = %{target_compatible_with},
 )
 
