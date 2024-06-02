@@ -3,7 +3,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 
 def _arm_all_files_impl(ctx):
-    print("Copy '{}' to '{}'".format(ctx.file.dep, ctx.outputs.elf)) # buildifier: disable=print
+    # print("Copy '{}' to '{}'".format(ctx.file.dep, ctx.outputs.elf)) # buildifier: disable=print
     ctx.actions.run(
         inputs = [ ctx.file.dep ],
         outputs = [ ctx.outputs.elf ],
@@ -14,7 +14,7 @@ def _arm_all_files_impl(ctx):
         ],
     )
 
-    print("Create bin file '{}' from '{}'".format(ctx.outputs.bin, ctx.file.dep)) # buildifier: disable=print
+    # print("Create bin file '{}' from '{}'".format(ctx.outputs.bin, ctx.file.dep)) # buildifier: disable=print
     ctx.actions.run(
         inputs = [ ctx.file.dep ],
         outputs = [ ctx.outputs.bin ],
@@ -28,7 +28,7 @@ def _arm_all_files_impl(ctx):
         ],
     )
 
-    print("Create hex file '{}' from '{}'".format(ctx.outputs.hex, ctx.file.dep)) # buildifier: disable=print
+    # print("Create hex file '{}' from '{}'".format(ctx.outputs.hex, ctx.file.dep)) # buildifier: disable=print
     ctx.actions.run(
         inputs = [ ctx.file.dep ],
         outputs = [ ctx.outputs.hex ],
