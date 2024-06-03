@@ -2,75 +2,75 @@
 
 package(default_visibility = ["//visibility:public"])
 
-
 filegroup(
     name = "cpp",
-    srcs = glob(["bin/%{arm_toolchain_type}-cpp%{extention}"]), # buildifier: disable=constant-glob
+    srcs = ["bin/%{arm_toolchain_type}-cpp%{extention}"],
 )
-
 filegroup(
     name = "cc",
-    srcs = glob(["bin/%{arm_toolchain_type}-gcc%{extention}"]), # buildifier: disable=constant-glob
+    srcs = ["bin/%{arm_toolchain_type}-gcc%{extention}"],
 )
-
 filegroup(
     name = "cxx",
-    srcs = glob(["bin/%{arm_toolchain_type}-g++%{extention}"]), # buildifier: disable=constant-glob
+    srcs = ["bin/%{arm_toolchain_type}-g++%{extention}"],
 )
-
 filegroup(
-    name = "cov",
-    srcs = glob(["bin/%{arm_toolchain_type}-gcov%{extention}"]), # buildifier: disable=constant-glob
+    name = "as",
+    srcs = ["bin/%{arm_toolchain_type}-as%{extention}"],
 )
-
 filegroup(
     name = "ar",
-    srcs = glob(["bin/%{arm_toolchain_type}-ar%{extention}"]), # buildifier: disable=constant-glob
+    srcs = ["bin/%{arm_toolchain_type}-ar%{extention}"],
 )
-
 filegroup(
     name = "ld",
-    srcs = glob(["bin/%{arm_toolchain_type}-ld%{extention}"]), # buildifier: disable=constant-glob
-)
-
-filegroup(
-    name = "nm",
-    srcs = glob(["bin/%{arm_toolchain_type}-nm%{extention}"]), # buildifier: disable=constant-glob
+    srcs = ["bin/%{arm_toolchain_type}-ld%{extention}"],
 )
 
 filegroup(
     name = "objcopy",
-    srcs = glob(["bin/%{arm_toolchain_type}-objcopy%{extention}"]), # buildifier: disable=constant-glob
+    srcs = ["bin/%{arm_toolchain_type}-objcopy%{extention}"],
 )
-
-filegroup(
-    name = "objdump",
-    srcs = glob(["bin/%{arm_toolchain_type}-objdump%{extention}"]), # buildifier: disable=constant-glob
-)
-
 filegroup(
     name = "strip",
-    srcs = glob(["bin/%{arm_toolchain_type}-strip%{extention}"]), # buildifier: disable=constant-glob
+    srcs = ["bin/%{arm_toolchain_type}-strip%{extention}"],
 )
 
 filegroup(
-    name = "as",
-    srcs = glob(["bin/%{arm_toolchain_type}-as%{extention}"]), # buildifier: disable=constant-glob
+    name = "cov",
+    srcs = ["bin/%{arm_toolchain_type}-gcov%{extention}"],
 )
 
 filegroup(
     name = "size",
-    srcs = glob(["bin/%{arm_toolchain_type}-size%{extention}"]), # buildifier: disable=constant-glob
+    srcs = ["bin/%{arm_toolchain_type}-size%{extention}"],
 )
-
+filegroup(
+    name = "nm",
+    srcs = ["bin/%{arm_toolchain_type}-nm%{extention}"],
+)
+filegroup(
+    name = "objdump",
+    srcs = ["bin/%{arm_toolchain_type}-objdump%{extention}"],
+)
 filegroup(
     name = "dwp",
-    srcs = glob([]),
+    srcs = ["bin/%{arm_toolchain_type}-dwp%{extention}"],
+)
+
+filegroup(
+    name = "dbg",
+    srcs = ["bin/%{arm_toolchain_type}-gdb%{extention}"],
 )
 
 
 filegroup(
-    name = "compiler_includes",
+    name = "toolchain_internal_every_files",
+    srcs = glob(["**"]),
+)
+
+filegroup(
+    name = "toolchain_includes",
     srcs = glob([
         "lib/gcc/arm-none-eabi/%{compiler_version}/include/**",
         "lib/gcc/arm-none-eabi/%{compiler_version}/include-fixed/**",
@@ -80,7 +80,7 @@ filegroup(
 )
 
 filegroup(
-    name = "compiler_libs",
+    name = "toolchain_libs",
     srcs = glob([
         "lib/gcc/arm-none-eabi/%{compiler_version}/*",
         "arm-none-eabi/lib/*",
@@ -89,7 +89,7 @@ filegroup(
 )
 
 filegroup(
-    name = "toolchains_bins",
+    name = "toolchain_bins",
     srcs = glob([
         "bin/*%{extention}",
         "arm-none-eabi/bin/*%{extention}",
@@ -97,17 +97,18 @@ filegroup(
 )
 
 filegroup(
-    name = "compiler_pieces",
+    name = "all_files",
     srcs = [
-        ":compiler_includes",
-        ":compiler_libs",
+        ":toolchain_includes",
+        ":toolchain_libs",
+        ":toolchain_bins",
     ],
 )
 
 filegroup(
     name = "compiler_files",
     srcs = [
-        ":compiler_pieces",
+        ":toolchain_includes",
         ":cpp",
         ":cc",
         ":cxx",
@@ -117,7 +118,7 @@ filegroup(
 filegroup(
     name = "linker_files",
     srcs = [
-        ":compiler_pieces",
+        ":toolchain_libs",
         ":cc",
         ":cxx",
         ":ld",
@@ -128,11 +129,12 @@ filegroup(
 filegroup(
     name = "coverage_files",
     srcs = [
-        ":compiler_pieces",
+        ":toolchain_includes",
+        ":toolchain_libs",
         ":cc",
         ":cxx",
-        ":cov",
         ":ld",
+        ":cov",
     ],
 )
 
@@ -142,28 +144,20 @@ filegroup(
         ":cpp",
         ":cc",
         ":cxx",
-        ":cov",
         ":ar",
         ":ld",
-        ":nm",
+
         ":objcopy",
-        ":objdump",
         ":strip",
+
+        ":cov",
+
+        ":nm",
+        ":objdump",
         ":as",
         ":size",
         ":dwp",
-    ],
-)
-
-
-filegroup(
-    name = "dbg",
-    srcs = glob(["bin/%{arm_toolchain_type}-gdb%{extention}"]),  # buildifier: disable=constant-glob
-)
-
-filegroup(
-    name = "compiler_extras",
-    srcs = [
-        "dbg",
+        
+        ":dbg",
     ],
 )

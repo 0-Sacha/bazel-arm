@@ -55,6 +55,12 @@ def _arm_toolchain_impl(rctx):
         compiler_package = "@{}//".format(rctx.attr.compiler_package_name)
         compiler_package_path = "external/{}/".format(rctx.attr.compiler_package_name)
 
+    toolchain_extras_filegroup = "@{}//{}:{}".format(
+        rctx.attr.toolchain_extras_filegroup.repo_name,
+        rctx.attr.toolchain_extras_filegroup.package,
+        rctx.attr.toolchain_extras_filegroup.name,
+    )
+
     substitutions = {
         "%{rctx_name}": rctx.name,
         "%{rctx_path}": toolchain_path,
@@ -67,8 +73,6 @@ def _arm_toolchain_impl(rctx):
         "%{compiler_package}": compiler_package,
         "%{compiler_package_path}": compiler_package_path,
 
-        "%{target_name}": rctx.attr.target_name,
-        "%{target_cpu}": rctx.attr.target_cpu,
         "%{exec_compatible_with}": json.encode(rctx.attr.exec_compatible_with),
         "%{target_compatible_with}": json.encode(rctx.attr.target_compatible_with),
 
@@ -79,8 +83,9 @@ def _arm_toolchain_impl(rctx):
         "%{defines}": json.encode(rctx.attr.defines),
         "%{includedirs}": json.encode(rctx.attr.includedirs),
         "%{linkdirs}": json.encode(rctx.attr.linkdirs),
+        "%{toolchain_libs}": json.encode(rctx.attr.toolchain_libs),
 
-        "%{flags_packed}": json.encode(rctx.attr.flags_packed),
+        "%{toolchain_extras_filegroup}": toolchain_extras_filegroup,
     }
     rctx.template(
         "BUILD",
@@ -119,8 +124,7 @@ _arm_toolchain = repository_rule(
         'archives': attr.string(mandatory = True),
         'compiler_package_name': attr.string(default = "//"),
 
-        'target_name': attr.string(default = "local"),
-        'target_cpu': attr.string(default = ""),
+        'exec_compatible_with': attr.string_list(default = []),
         'target_compatible_with': attr.string_list(default = []),
 
         'copts': attr.string_list(default = []),
@@ -130,8 +134,9 @@ _arm_toolchain = repository_rule(
         'defines': attr.string_list(default = []),
         'includedirs': attr.string_list(default = []),
         'linkdirs': attr.string_list(default = []),
+        'toolchain_libs': attr.string_list(default = []),
 
-        'flags_packed': attr.string_dict(default = {}),
+        'toolchain_extras_filegroup': attr.label(),
     },
     local = False,
 )
@@ -141,8 +146,7 @@ def arm_toolchain(
         arm_toolchain_type,
         arm_toolchain_version = "latest",
 
-        target_name = "local",
-        target_cpu = "",
+        exec_compatible_with = [],
         target_compatible_with = [],
 
         copts = [],
@@ -152,9 +156,10 @@ def arm_toolchain(
         defines = [],
         includedirs = [],
         linkdirs = [],
-        
-        flags_packed = {},
+        toolchain_libs = [],
 
+        toolchain_extras_filegroup = "@bazel_utilities//:empty",
+        
         local_download = True,
         registry = ARM_REGISTRY,
 
@@ -169,8 +174,7 @@ def arm_toolchain(
         arm_toolchain_type: The arm type to use, avaible: [ arm-none-eabi ]
         arm_toolchain_version: The arm archive version
 
-        target_name: The target name
-        target_cpu: The target cpu name
+        exec_compatible_with: The target_compatible_with list for the toolchain
         target_compatible_with: The target_compatible_with list for the toolchain
 
         copts: copts
@@ -180,8 +184,9 @@ def arm_toolchain(
         defines: defines
         includedirs: includedirs
         linkdirs: linkdirs
-        
-        flags_packed: pack of flags, checkout the syntax at bazel_utilities
+        toolchain_libs: toolchain_libs
+
+        toolchain_extras_filegroup: filegroup added to the cc_toolchain rule to get access to thoses files when sandboxed
 
         local_download: wether the archive should be downloaded in the same repository (True) or in its own repo
         registry: The arm registry to use, to allow close environement to provide their own mirroir/url
@@ -212,8 +217,7 @@ def arm_toolchain(
         archives = json.encode(archive["archives"]),
         compiler_package_name = compiler_package_name,
 
-        target_name = target_name,
-        target_cpu = target_cpu,
+        exec_compatible_with = exec_compatible_with,
         target_compatible_with = target_compatible_with,
 
         copts = copts,
@@ -223,8 +227,9 @@ def arm_toolchain(
         defines = defines,
         includedirs = includedirs,
         linkdirs = linkdirs,
+        toolchain_libs = toolchain_libs,
 
-        flags_packed = flags_packed,
+        toolchain_extras_filegroup = toolchain_extras_filegroup,
     )
 
     if auto_register_toolchain:
