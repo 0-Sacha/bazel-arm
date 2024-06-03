@@ -18,6 +18,7 @@ def _arm_all_files_impl(ctx):
     ctx.actions.run(
         inputs = [ ctx.file.dep ],
         outputs = [ ctx.outputs.bin ],
+        tools = [ ctx.file.objcopy ],
         executable = ctx.file.objcopy.path,
         arguments = [
             "-O",
@@ -32,6 +33,7 @@ def _arm_all_files_impl(ctx):
     ctx.actions.run(
         inputs = [ ctx.file.dep ],
         outputs = [ ctx.outputs.hex ],
+        tools = [ ctx.file.objcopy ],
         executable = ctx.file.objcopy.path,
         arguments = [
             "-O",

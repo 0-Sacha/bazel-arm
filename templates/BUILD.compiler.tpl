@@ -2,7 +2,6 @@
 
 package(default_visibility = ["//visibility:public"])
 
-
 filegroup(
     name = "cpp",
     srcs = ["bin/%{arm_toolchain_type}-cpp%{extention}"],
@@ -64,6 +63,12 @@ filegroup(
     srcs = ["bin/%{arm_toolchain_type}-gdb%{extention}"],
 )
 
+
+filegroup(
+    name = "toolchain_internal_every_files",
+    srcs = glob(["**"]),
+)
+
 filegroup(
     name = "toolchain_includes",
     srcs = glob([
@@ -84,7 +89,7 @@ filegroup(
 )
 
 filegroup(
-    name = "toolchains_bins",
+    name = "toolchain_bins",
     srcs = glob([
         "bin/*%{extention}",
         "arm-none-eabi/bin/*%{extention}",

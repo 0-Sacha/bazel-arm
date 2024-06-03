@@ -55,6 +55,12 @@ def _arm_toolchain_impl(rctx):
         compiler_package = "@{}//".format(rctx.attr.compiler_package_name)
         compiler_package_path = "external/{}/".format(rctx.attr.compiler_package_name)
 
+    toolchain_extras_filegroup = "@{}//{}:{}".format(
+        rctx.attr.toolchain_extras_filegroup.repo_name,
+        rctx.attr.toolchain_extras_filegroup.package,
+        rctx.attr.toolchain_extras_filegroup.name,
+    )
+
     substitutions = {
         "%{rctx_name}": rctx.name,
         "%{rctx_path}": toolchain_path,
@@ -77,6 +83,9 @@ def _arm_toolchain_impl(rctx):
         "%{defines}": json.encode(rctx.attr.defines),
         "%{includedirs}": json.encode(rctx.attr.includedirs),
         "%{linkdirs}": json.encode(rctx.attr.linkdirs),
+        "%{toolchain_libs}": json.encode(rctx.attr.toolchain_libs),
+
+        "%{toolchain_extras_filegroup}": toolchain_extras_filegroup,
     }
     rctx.template(
         "BUILD",
@@ -125,6 +134,9 @@ _arm_toolchain = repository_rule(
         'defines': attr.string_list(default = []),
         'includedirs': attr.string_list(default = []),
         'linkdirs': attr.string_list(default = []),
+        'toolchain_libs': attr.string_list(default = []),
+
+        'toolchain_extras_filegroup': attr.label(),
     },
     local = False,
 )
@@ -144,6 +156,9 @@ def arm_toolchain(
         defines = [],
         includedirs = [],
         linkdirs = [],
+        toolchain_libs = [],
+
+        toolchain_extras_filegroup = "@bazel_utilities//:empty",
         
         local_download = True,
         registry = ARM_REGISTRY,
@@ -169,6 +184,9 @@ def arm_toolchain(
         defines: defines
         includedirs: includedirs
         linkdirs: linkdirs
+        toolchain_libs: toolchain_libs
+
+        toolchain_extras_filegroup: filegroup added to the cc_toolchain rule to get access to thoses files when sandboxed
 
         local_download: wether the archive should be downloaded in the same repository (True) or in its own repo
         registry: The arm registry to use, to allow close environement to provide their own mirroir/url
@@ -209,6 +227,9 @@ def arm_toolchain(
         defines = defines,
         includedirs = includedirs,
         linkdirs = linkdirs,
+        toolchain_libs = toolchain_libs,
+
+        toolchain_extras_filegroup = toolchain_extras_filegroup,
     )
 
     if auto_register_toolchain:
